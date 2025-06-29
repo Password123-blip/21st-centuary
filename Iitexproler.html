@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IIT Explorer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      top: 0;
+      left: 0;
+    }
+    header {
+      background: rgba(0, 0, 80, 0.85);
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav a {
+      color: white;
+      margin: 0 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .hero {
+      text-align: center;
+      color: white;
+      padding: 60px 20px;
+      background: linear-gradient(to right, #0055aa, #003366);
+    }
+    section {
+      padding: 30px 15px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .dark-mode {
+      background: #121212;
+      color: #fff;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #0055aa;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .card {
+      background: rgba(255,255,255,0.9);
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .gallery img {
+      width: 100px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+    }
+    #modal img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+    .faq-question {
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .faq-answer {
+      display: none;
+      padding-left: 10px;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 600px) {
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .hero {
+        padding: 40px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="particles-js"></div>
+
+<header>
+  <div><strong>IIT Explorer</strong></div>
+  <nav>
+    <a href="#directory">IITs</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#faq">FAQ</a>
+    <a href="#quiz">Quiz</a>
+    <a href="#contact">Contact</a>
+    <button onclick="toggleDarkMode()">🌓</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Welcome to IIT Explorer</h1>
+  <p>Explore India’s premier engineering institutes with an interactive experience.</p>
+</section>
+
+<section id="directory">
+  <h2>IIT Directory</h2>
+  <input type="text" id="search" placeholder="Search IIT..." oninput="filterIITs()"/>
+  <div id="iit-list">
+    <!-- IIT cards inserted by JS -->
+  </div>
+</section>
+
+<section id="gallery">
+  <h2>Gallery</h2>
+  <div class="gallery">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/IIT_Delhi_Logo.svg/512px-IIT_Delhi_Logo.svg.png" onclick="showModal(this.src)">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/IIT_Bombay_Logo.svg/512px-IIT_Bombay_Logo.svg.png" onclick="showModal(this.src)">
+  </div>
+</section>
+
+<div id="modal" onclick="closeModal()">
+  <img id="modal-img" src="">
+</div>
+
+<section id="faq">
+  <h2>FAQs</h2>
+  <div>
+    <div class="faq-question" onclick="toggleFAQ(this)">📌 What is IIT?</div>
+    <div class="faq-answer">The Indian Institutes of Technology are the top engineering colleges in India.</div>
+
+    <div class="faq-question" onclick="toggleFAQ(this)">📌 How many IITs are there?</div>
+    <div class="faq-answer">As of now, there are 23 IITs in India.</div>
+  </div>
+</section>
+
+<section id="quiz">
+  <h2>Quick Quiz</h2>
+  <p>🧠 Which city hosts IIT Madras?</p>
+  <input type="text" id="quiz-answer" placeholder="Your answer..."/>
+  <button onclick="checkAnswer()">Submit</button>
+  <p id="quiz-result"></p>
+</section>
+
+<section id="contact">
+  <h2>Contact Us</h2>
+  <form onsubmit="submitForm(event)">
+    <input type="text" placeholder="Your Name" required />
+    <input type="email" placeholder="Email" required />
+    <textarea placeholder="Message" required></textarea>
+    <button type="submit">Send</button>
+  </form>
+</section>
+
+<script>
+  const iits = [
+    "IIT Bombay", "IIT Delhi", "IIT Kanpur", "IIT Kharagpur", "IIT Madras",
+    "IIT Roorkee", "IIT Hyderabad", "IIT Guwahati", "IIT Bhubaneswar", "IIT Gandhinagar"
+  ];
+  function filterIITs() {
+    const query = document.getElementById('search').value.toLowerCase();
+    const container = document.getElementById('iit-list');
+    container.innerHTML = '';
+    iits.filter(name => name.toLowerCase().includes(query)).forEach(name => {
+      container.innerHTML += `<div class="card">${name}</div>`;
+    });
+  }
+  filterIITs();
+
+  function toggleFAQ(el) {
+    const answer = el.nextElementSibling;
+    answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function checkAnswer() {
+    const ans = document.getElementById("quiz-answer").value.trim().toLowerCase();
+    const result = document.getElementById("quiz-result");
+    result.textContent = ans === "chennai" ? "✅ Correct!" : "❌ Try again!";
+  }
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  function showModal(src) {
+    document.getElementById('modal-img').src = src;
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    alert("Thanks for contacting us!");
+    e.target.reset();
+  }
+</script>
+
+<!-- Inline particles.js effect -->
+<script>
+window.onload = () => {
+  const canvas = document.createElement("canvas");
+  canvas.id = "bg-canvas";
+  document.getElementById("particles-js").appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+  let w = canvas.width = window.innerWidth;
+  let h = canvas.height = window.innerHeight;
+  let particles = Array.from({length: 60}, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vx: Math.random() * 1 - 0.5,
+    vy: Math.random() * 1 - 0.5,
+    r: Math.random() * 2 + 1
+  }));
+  function draw() {
+    ctx.fillStyle = document.body.classList.contains("dark-mode") ? "#111" : "#f0f0ff";
+    ctx.fillRect(0, 0, w, h);
+    for (let p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > w) p.vx *= -1;
+      if (p.y < 0 || p.y > h) p.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = "#0088ff";
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+  window.onresize = () => {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+}
+</script>
+
+</body>
+</html>
+
+ 
